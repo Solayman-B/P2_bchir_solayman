@@ -18,7 +18,7 @@ git push origin main
 
 """
 #importer les paquets nécessaires
-
+# coding: utf-8
 import requests
 from bs4 import BeautifulSoup
 
@@ -70,7 +70,18 @@ if response.ok:
     #image
     image = soup.find("img")
 
-    print("\n \n" + title.text + "\n \n", description.text + "\n \n", image, "\n \n" + rating + "\n \n")
+    #url de la page
+    #http: // books.toscrape.com + href - review/
+
+    #url = soup.find("a", id="write_review").p
+    #print(soup)
+
+    #catégorie du livre
+
+    category = soup.find("li", class_="active").find_previous("a").text
+
+
+    print("\n \n" + title.text + "\n \n", description.text + "\n \n", image, "\n \n" + rating + "\n \n", category)
 
 
 
