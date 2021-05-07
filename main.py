@@ -41,7 +41,7 @@ if response.ok:
     tds = soup.findAll("td")
 
     #imprimer les td
-   # [print(str(td) + "\n\n") for td in tds]
+    [print("\n" + td.text + "\n") for td in tds]
 
     #recherche de la balise h1 contenant le titre du livre
     title = soup.find("h1")
@@ -54,29 +54,27 @@ if response.ok:
     rating = soup.find("p", class_="star-rating")
 
     if "One" in str(rating):
-        print("one")
+        rating = "one"
     elif "Two" in str(rating):
-        print("two")
+        rating = "two"
     elif "Three" in str(rating):
-        print("three")
+        rating = "three"
     elif "For" in str(rating):
-        print("for")
+        rating = "for"
     elif "Five" in str(rating):
-        print("five")
+        rating = "five"
 
-    #description
+    #description obtenue à partir de la balise id précédente
     description = soup.find("div", id="product_description").find_next("p")
 
-    print("\n \n" + title.text + "\n \n", description.text + "\n \n")
+    #image
+    image = soup.find("img")
+
+    print("\n \n" + title.text + "\n \n", description.text + "\n \n", image, "\n \n" + rating + "\n \n")
 
 
 
 """       python3 main.py
 
-one     3 E
-two     3 W
-three   5 5
-for     3 O
-five    4 4
 
 """
