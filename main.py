@@ -65,7 +65,7 @@ if response.ok:
         print("five")
 
     #description
-    description = soup.find_next("p")
+    description = soup.find("div", id="product_description").find_next("p")
 
     print("\n \n" + title.text + "\n \n", description.text + "\n \n")
 
