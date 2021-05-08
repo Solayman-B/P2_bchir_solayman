@@ -21,6 +21,8 @@ git push origin main
 # coding: utf-8
 import requests
 from bs4 import BeautifulSoup
+import csv
+import os
 
 #url du site à scrapper
 
@@ -39,6 +41,11 @@ if response.ok:
 
     #rechercher tous les td (balises de cellules de tableau html)
     tds = soup.findAll("td")
+
+    #supprimer les éléments inutiles de la liste
+    del tds[1]
+    del tds[3]
+    del tds[4]
 
     #imprimer les td
     [print("\n" + td.text + "\n") for td in tds]
@@ -83,7 +90,15 @@ if response.ok:
 
     print("\n \n" + title.text + "\n \n", description.text + "\n \n", image, "\n \n" + rating + "\n \n", category)
 
+    #création du tableau avec les en-tetes
+    tableau =[["product_page_url", "universal_ product_code (upc)", "title", "price_including_tax", "price_excluding_tax", "number_available", "product_description", "category", "review_rating", "image_url"],
+              ["A","B","C","D","E"]]
+    print(tableau)
 
+    #création du fichier csv avec les éléments du tableau
+    with open('books_to_scrape.csv', 'w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerows(tableau)
 
 """       python3 main.py
 
