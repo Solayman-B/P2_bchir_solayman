@@ -42,16 +42,20 @@ if response.ok:
     #rechercher tous les td (balises de cellules de tableau html)
     tds = soup.findAll("td")
 
-    #supprimer les éléments inutiles de la liste
-    del tds[1]
-    del tds[3]
-    del tds[4]
+    upc = tds[0].text
 
-    #imprimer les td
-    [print("\n" + td.text + "\n") for td in tds]
+    price_including_tax = tds[2].text
+    price_including_tax = price_including_tax[1:]
+
+    price_excluding_tax = tds[3].text
+    price_excluding_tax = price_excluding_tax[1:]
+
+    number_available = tds[5].text
+    number_available = int(number_available[10:12])
 
     #recherche de la balise h1 contenant le titre du livre
     title = soup.find("h1")
+
 
     #recherche de la balise qui précède la notation (stock)
     stock = soup.find("p", class_="instock availability")
@@ -87,12 +91,9 @@ if response.ok:
 
     category = soup.find("li", class_="active").find_previous("a").text
 
-
-    print("\n \n" + title.text + "\n \n", description.text + "\n \n", image, "\n \n" + rating + "\n \n", category)
-
     #création du tableau avec les en-tetes
     tableau =[["product_page_url", "universal_ product_code (upc)", "title", "price_including_tax", "price_excluding_tax", "number_available", "product_description", "category", "review_rating", "image_url"],
-              ["A","B","C","D","E"]]
+              ["url", upc,title.text, price_including_tax,price_excluding_tax,number_available,]]
     print(tableau)
 
     #création du fichier csv avec les éléments du tableau
