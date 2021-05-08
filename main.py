@@ -65,27 +65,22 @@ if response.ok:
     rating = soup.find("p", class_="star-rating")
 
     if "One" in str(rating):
-        rating = "one"
+        rating = "one star"
     elif "Two" in str(rating):
-        rating = "two"
+        rating = "two stars"
     elif "Three" in str(rating):
-        rating = "three"
+        rating = "three stars"
     elif "For" in str(rating):
-        rating = "for"
+        rating = "for stars"
     elif "Five" in str(rating):
-        rating = "five"
+        rating = "five stars"
 
     #description obtenue à partir de la balise id précédente
-    description = soup.find("div", id="product_description").find_next("p")
+    description = soup.find("div", id="product_description").find_next("p").text
 
     #image
-    image = soup.find("img")
-
-    #url de la page
-    #http: // books.toscrape.com + href - review/
-
-    #url = soup.find("a", id="write_review").p
-    #print(soup)
+    image = soup.find("img")["src"]
+    image = "http://books.toscrape.com" + image[5:]
 
     #catégorie du livre
 
@@ -93,8 +88,7 @@ if response.ok:
 
     #création du tableau avec les en-tetes
     tableau =[["product_page_url", "universal_ product_code (upc)", "title", "price_including_tax", "price_excluding_tax", "number_available", "product_description", "category", "review_rating", "image_url"],
-              ["url", upc,title.text, price_including_tax,price_excluding_tax,number_available,]]
-    print(tableau)
+              [url, upc, title.text, price_including_tax, price_excluding_tax, number_available, description, category, rating, image]]
 
     #création du fichier csv avec les éléments du tableau
     with open('books_to_scrape.csv', 'w', newline='') as f:
