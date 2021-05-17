@@ -12,6 +12,8 @@ commandes git
 
 git add fichier.extension
 
+git status
+
 git commit -m "modification apportée"
 
 git push origin main
@@ -24,111 +26,92 @@ from bs4 import BeautifulSoup
 import csv
 import os
 
+tds = ["product_page_url", "universal_ product_code (upc)", "title", "price_including_tax", "price_excluding_tax", "number_available", "product_description", "category", "review_rating", "image_url"]
+
 #url de la categorie de livres
-url_cat = "http://books.toscrape.com/catalogue/category/books/sequential-art_5/index.html"
+url = "http://books.toscrape.com/catalogue/category/books/mystery_3/index.html"
 
 #effectuer une requette get html
-response_cat = requests.get(url_cat)
-
+response = requests.get(url)
 #si la réponse est valide (code 200)
-if response_cat.ok:
-    #affecter le texte html de la page dans la variable soup_cat et analysé en utilisant lxml
-    soup_books = BeautifulSoup(response_cat.text, "lxml")
+if response.ok:
+#affecter le texte html de la page dans la variable soup et analysé en utilisant lxml
+    soup = BeautifulSoup(response.text, "lxml")
 
-    #extraire les urls des livres de la 1ere page de la catégorie
-    url_books_tableau = []
-    for url_books in soup_books.findAll("h3"):
-        url_books = str(url_books)[21:]
-        url_books = url_books.split('"', 1)
-        for elem in [0,len(url_books)-1]:
-            if elem % 2 == 0:
-                url_books_tableau.append("http://books.toscrape.com/catalogue" + url_books[elem])
+#extraire les urls des livres de la 1ere page de la catégorie
+url_books = []
+for url_book in soup.findAll("h3"):
+    url_books.append("http://books.toscrape.com/catalogue" + str(url_book.a["href"])[8:])
 
-    print(url_books_tableau)
+#effectuer une requette get html
+for i in range (0,len(url_books)-1):
+    response = requests.get(url_books[i])
+
+    #si la réponse est valide (code 200)
+    if response.ok:
+
+        #affecter le texte html de la page dans la variable soup et analysé en utilisant lxml
+        soup = BeautifulSoup(response.text, "lxml")
+
+        #rechercher tous les td (balises de cellules de tableau html)
+        tda = soup.findAll("td")
+
+        tds.append(url_books[i])
+
+        tds.append(tda[0].text)
+
+        # recherche de la balise h1 contenant le titre du livre
+        tds.append(soup.find("h1").text)
+
+        price_including_tax = tda[2].text
+        tds.append(price_including_tax[1:])
+
+        price_excluding_tax = tda[3].text
+        tds.append(price_excluding_tax[1:])
+
+        number_available = tda[5].text
+        tds.append(int(number_available[10:12]))
+
+        #description obtenue à partir de la balise id précédente
+        tds.append(soup.find("div", id="product_description").find_next("p").text)
+
+        #catégorie du livre
+        tds.append(soup.find("li", class_="active").find_previous("a").text)
+
+        #recherche de la balise qui précède la notation (stock)
+        #stock = soup.find("p", class_="instock availability")
+
+        #extraction de la note
+        rating = soup.find("p", class_="star-rating")
+
+        if "One" in str(rating):
+            rating = "one star"
+        elif "Two" in str(rating):
+            rating = "two stars"
+        elif "Three" in str(rating):
+            rating = "three stars"
+        elif "Four" in str(rating):
+            rating = "four stars"
+        elif "Five" in str(rating):
+            rating = "five stars"
+
+        tds.append(rating)
+
+        #image
+        image = soup.find("img")["src"]
+        tds.append("http://books.toscrape.com" + image[5:])
 
 
-    """
-    for i in (2,52):
-        if i in url de category_list2:
-            response_cati = request.get(url_cati)
-            fonction scrap_thid_category 
-            fonction scrap this book (en modifiant l'url de la page à scraper)
-            
-    """
+
+        #création du fichier csv avec les éléments du tableau
+        #with open("books_to_scrape.csv", "w", newline="") as f:
+            #writer = csv.writer(f)
+            #writer.writerows(tableau)
+
+print(tds)
 
 
-
-    def scrap_this_book ():
-
-        #url du site à scrapper
-        url = "http://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html"
-
-        #effectuer une requette get html
-        response = requests.get(url)
-
-
-        #si la réponse est valide (code 200)
-        if response.ok:
-
-            #affecter le texte html de la page dans la variable soup et analysé en utilisant lxml
-            soup = BeautifulSoup(response.text, "lxml")
-
-            #rechercher tous les td (balises de cellules de tableau html)
-            tds = soup.findAll("td")
-
-            upc = tds[0].text
-
-            price_including_tax = tds[2].text
-            price_including_tax = price_including_tax[1:]
-
-            price_excluding_tax = tds[3].text
-            price_excluding_tax = price_excluding_tax[1:]
-
-            number_available = tds[5].text
-            number_available = int(number_available[10:12])
-
-            #recherche de la balise h1 contenant le titre du livre
-            title = soup.find("h1")
-
-
-            #recherche de la balise qui précède la notation (stock)
-            stock = soup.find("p", class_="instock availability")
-
-            #
-            #extraction de la note
-            rating = soup.find("p", class_="star-rating")
-
-            if "One" in str(rating):
-                rating = "one star"
-            elif "Two" in str(rating):
-                rating = "two stars"
-            elif "Three" in str(rating):
-                rating = "three stars"
-            elif "For" in str(rating):
-                rating = "for stars"
-            elif "Five" in str(rating):
-                rating = "five stars"
-
-            #description obtenue à partir de la balise id précédente
-            description = soup.find("div", id="product_description").find_next("p").text
-
-            #image
-            image = soup.find("img")["src"]
-            image = "http://books.toscrape.com" + image[5:]
-
-            #catégorie du livre
-            category = soup.find("li", class_="active").find_previous("a").text
-
-            #création du tableau avec les en-tetes
-            tableau =[["product_page_url", "universal_ product_code (upc)", "title", "price_including_tax",
-                                                                    "price_excluding_tax", "number_available",
-                                                                    "product_description", "category",
-                                                                    "review_rating", "image_url"],
-                      [url, upc, title.text, price_including_tax, price_excluding_tax, number_available,
-                                                                    description, category, rating, image]]
-
-            #création du fichier csv avec les éléments du tableau
-            with open('books_to_scrape.csv', 'w', newline='') as f:
-                writer = csv.writer(f)
-                writer.writerows(tableau)
-
+#extraire l'url de la page suivante s'il y en a une
+#url_shortened = url.rstrip("index.html")
+#if soup.find("li", attrs={'class': "next"}) != None:
+    #next_page = url_shortened + soup.find("li", attrs={'class': "next"}).a["href"]
