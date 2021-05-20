@@ -26,110 +26,104 @@ from bs4 import BeautifulSoup
 import csv
 import os
 
-def extract_this_page(aurl):
+url="http://books.toscrape.com/catalogue/category/books/mystery_3/index.html"
 
-    tds = []
-
-    #url de la categorie de livres
-    url = aurl
-
-    #effectuer une requette get html
+def extract_html(url=url):
+    # get html request
     response = requests.get(url)
-    #si la réponse est valide (code 200)
+    # if request is valid (code 200)
     if response.ok:
-    #affecter le texte html de la page dans la variable soup et analysé en utilisant lxml
+    # save html in soup and analyse it with lxml
         soup = BeautifulSoup(response.text, "lxml")
+        return soup
 
-    #extraire les urls des livres de la 1ere page de la catégorie
+soup = extract_html()
+
+def extract_1st_page_urls():
     url_books = []
     for url_book in soup.findAll("h3"):
         url_books.append("http://books.toscrape.com/catalogue" + str(url_book.a["href"])[8:])
+    return url_books
 
-    #effectuer une requette get html
-    for i in range (0,len(url_books)):
-        response = requests.get(url_books[i])
+url_books = extract_1st_page_urls()
 
-        #si la réponse est valide (code 200)
-        if response.ok:
+# analyse data and save to tds
+def find_data():
 
-            #affecter le texte html de la page dans la variable soup et analysé en utilisant lxml
-            soup = BeautifulSoup(response.text, "lxml")
+    tds = []
 
-            #rechercher tous les td (balises de cellules de tableau html)
-            tda = soup.findAll("td")
+    # rechercher tous les td (balises de cellules de tableau html)
+    tda = soup.findAll("td")
 
-            # image
-            image = soup.find("img")["src"]
-            tds.append("http://books.toscrape.com" + image[5:])
+    # url page
+    tds.append(url_books[i])
 
-            # extraction de la note
-            rating = soup.find("p", class_="star-rating")
+    # upc
+    tds.append(tda[0].text)
 
-            if "One" in str(rating):
-                rating = "one star"
-            elif "Two" in str(rating):
-                rating = "two stars"
-            elif "Three" in str(rating):
-                rating = "three stars"
-            elif "Four" in str(rating):
-                rating = "four stars"
-            elif "Five" in str(rating):
-                rating = "five stars"
+    # title
+    tds.append(soup.find("h1").text)
 
-            tds.append(rating)
+    price_including_tax = tda[2].text
+    tds.append(price_including_tax[1:])
 
-            # catégorie du livre
-            tds.append(soup.find("li", class_="active").find_previous("a").text)
+    price_excluding_tax = tda[3].text
+    tds.append(price_excluding_tax[1:])
 
-            # description obtenue à partir de la balise id précédente
-            description = soup.find("div", id="product_description").find_next("p").text
-            #remplacer ; par ";"
-            tds.append(description.replace(";", ","))
+    number_available = tda[5].text
+    tds.append(number_available[10:12])
 
-            number_available = tda[5].text
-            tds.append(int(number_available[10:12]))
+    # description obtenue à partir de la balise id précédente
+    description = soup.find("div", id="product_description").find_next("p").text
+    # remplacer ; par ";"
+    tds.append(description.replace(";", ","))
 
-            price_excluding_tax = tda[3].text
-            tds.append(price_excluding_tax[1:])
+    # catégorie du livre
+    category = soup.find("li", class_="active").find_previous("a").text
+    tds.append(category)
 
-            price_including_tax = tda[2].text
-            tds.append(price_including_tax[1:])
+    # extraction de la note
+    rating = soup.find("p", class_="star-rating")
 
-            # recherche de la balise h1 contenant le titre du livre
-            tds.append(soup.find("h1").text)
+    if "One" in str(rating):
+        rating = "1/5"
+    elif "Two" in str(rating):
+        rating = "2/5"
+    elif "Three" in str(rating):
+        rating = "3/5"
+    elif "Four" in str(rating):
+        rating = "4/5"
+    elif "Five" in str(rating):
+        rating = "5/5"
 
-            tds.append(tda[0].text)
+    tds.append(rating)
 
-            tds.append("\n" + url_books[i])
+    # image
+    image = soup.find("img")["src"]
+    tds.append("http://books.toscrape.com" + image[5:])
+    return tds, category
 
-    file = open("books_to_scrape.csv", "a")
-    for i in range(0, len(tds)):
-        file.write(str(tds.pop()) + " ; ")
+def save_to_csv(data, i):
+    file = open(category + ".csv", "a", newline="")
+    writer = csv.writer(file)
+    if i == 0:
+        writer.writerow(["product_page_url; universal_ product_code (upc); title ; price_including_tax ; price_excluding_tax ; number_available ; product_description ; category ;review_rating ; image_url"])
+    writer.writerow(data)
     file.close()
 
+# html request of the extracted urls
+for i in range (0,len(url_books)):
+    soup = extract_html(url_books[i])
+    tds, category = find_data()
+    save_to_csv(tds, i)
 
-url = "http://books.toscrape.com/catalogue/category/books/mystery_3/index.html"
-
-file = open("books_to_scrape.csv", "w")
-file.write(
-    "product_page_url; universal_ product_code (upc); title ; price_including_tax ; price_excluding_tax ; number_available ; product_description ; category ;review_rating ; image_url")
-file.close()
-
-extract_this_page(url)
-
-#effectuer une requette get html
-response = requests.get(url)
-#si la réponse est valide (code 200)
-if response.ok:
-#affecter le texte html de la page dans la variable soup et analysé en utilisant lxml
-    soup = BeautifulSoup(response.text, "lxml")
+def extract_next_page_url(url=url):
 #extraire l'url de la page suivante s'il y en a une
     url_shortened = url.rstrip("index.html")
     if soup.find("li", class_="next") is not None:
-        for a in soup.find("li", class_="next"):
-            url = url_shortened + a["href"]
-            extract_this_page(url)
+        url = url_shortened + soup.find("li", class_="next").a["href"]
     else:
         pass
+    return url
 
-
+url = extract_next_page_url()
