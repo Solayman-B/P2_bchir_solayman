@@ -26,104 +26,111 @@ from bs4 import BeautifulSoup
 import csv
 import os
 
-url="http://books.toscrape.com/catalogue/category/books/mystery_3/index.html"
+url = "http://books.toscrape.com/catalogue/category/books/mystery_3/index.html"
+while url != 0:
+    def extract_html(url=url):
+        # get html request
+        response = requests.get(url)
+        # if request is valid (code 200)
+        if response.ok:
+        # save html in soup and analyse it with lxml
+            soup = BeautifulSoup(response.text, "lxml")
+            return soup
 
-def extract_html(url=url):
-    # get html request
-    response = requests.get(url)
-    # if request is valid (code 200)
-    if response.ok:
-    # save html in soup and analyse it with lxml
-        soup = BeautifulSoup(response.text, "lxml")
-        return soup
+    soup = extract_html()
 
-soup = extract_html()
+    def extract_url_page():
+        url_books = []
+        for url_book in soup.findAll("h3"):
+            url_books.append("http://books.toscrape.com/catalogue" + str(url_book.a["href"])[8:])
+        return url_books
 
-def extract_1st_page_urls():
-    url_books = []
-    for url_book in soup.findAll("h3"):
-        url_books.append("http://books.toscrape.com/catalogue" + str(url_book.a["href"])[8:])
-    return url_books
+    url_books = extract_url_page()
 
-url_books = extract_1st_page_urls()
+    # analyse data and save to tds
+    def find_data():
 
-# analyse data and save to tds
-def find_data():
+        tds = []
 
-    tds = []
+        # rechercher tous les td (balises de cellules de tableau html)
+        tda = soup.findAll("td")
 
-    # rechercher tous les td (balises de cellules de tableau html)
-    tda = soup.findAll("td")
+        # url page
+        tds.append(url_books[i])
+        # upc
+        tds.append(tda[0].text)
 
-    # url page
-    tds.append(url_books[i])
+        # title
+        tds.append(soup.find("h1").text)
 
-    # upc
-    tds.append(tda[0].text)
+        price_including_tax = tda[2].text
+        tds.append(price_including_tax[1:])
 
-    # title
-    tds.append(soup.find("h1").text)
+        price_excluding_tax = tda[3].text
+        tds.append(price_excluding_tax[1:])
 
-    price_including_tax = tda[2].text
-    tds.append(price_including_tax[1:])
+        number_available = tda[5].text
+        tds.append(number_available[10:12])
 
-    price_excluding_tax = tda[3].text
-    tds.append(price_excluding_tax[1:])
+        # description obtenue à partir de la balise id précédente
+        if soup.find("div", id="product_description") == None:
+            description = ""
+        else:
+            description = soup.find("div", id="product_description").find_next("p").text
+        # remplacer ; par ";"
+        tds.append(description.replace(";", ","))
 
-    number_available = tda[5].text
-    tds.append(number_available[10:12])
+        # catégorie du livre
+        category = soup.find("li", class_="active").find_previous("a").text
+        tds.append(category)
 
-    # description obtenue à partir de la balise id précédente
-    description = soup.find("div", id="product_description").find_next("p").text
-    # remplacer ; par ";"
-    tds.append(description.replace(";", ","))
+        # extraction de la note
+        rating = soup.find("p", class_="star-rating")
 
-    # catégorie du livre
-    category = soup.find("li", class_="active").find_previous("a").text
-    tds.append(category)
+        if "One" in str(rating):
+            rating = "1/5"
+        elif "Two" in str(rating):
+            rating = "2/5"
+        elif "Three" in str(rating):
+            rating = "3/5"
+        elif "Four" in str(rating):
+            rating = "4/5"
+        elif "Five" in str(rating):
+            rating = "5/5"
 
-    # extraction de la note
-    rating = soup.find("p", class_="star-rating")
+        tds.append(rating)
 
-    if "One" in str(rating):
-        rating = "1/5"
-    elif "Two" in str(rating):
-        rating = "2/5"
-    elif "Three" in str(rating):
-        rating = "3/5"
-    elif "Four" in str(rating):
-        rating = "4/5"
-    elif "Five" in str(rating):
-        rating = "5/5"
+        # image
+        image = soup.find("img")["src"]
+        tds.append("http://books.toscrape.com" + image[5:])
+        return tds, category
 
-    tds.append(rating)
+    def save_to_csv(data, i):
+        file_name = category + ".csv"
+        if os.path.isfile(file_name):
+            file = open(file_name, "a", newline="")
+            writer = csv.writer(file)
+        else:
+            file = open(file_name, "w", newline="")
+            writer = csv.writer(file)
+            writer.writerow(["product_page_url; universal_ product_code (upc); title ; price_including_tax ; price_excluding_tax ; number_available ; product_description ; category ;review_rating ; image_url"])
+        writer.writerow(data)
+        file.close()
 
-    # image
-    image = soup.find("img")["src"]
-    tds.append("http://books.toscrape.com" + image[5:])
-    return tds, category
+    # html request of the extracted urls
+    for i in range (0,len(url_books)):
+        soup = extract_html(url_books[i])
+        tds, category = find_data()
+        save_to_csv(tds, i)
 
-def save_to_csv(data, i):
-    file = open(category + ".csv", "a", newline="")
-    writer = csv.writer(file)
-    if i == 0:
-        writer.writerow(["product_page_url; universal_ product_code (upc); title ; price_including_tax ; price_excluding_tax ; number_available ; product_description ; category ;review_rating ; image_url"])
-    writer.writerow(data)
-    file.close()
+    def extract_next_page_url(url):
+    #extraire l'url de la page suivante s'il y en a une
+        soup = extract_html()
+        url_shortened = url.rstrip("index.html")
+        if soup.find("li", class_="next"):
+            url = url_shortened + soup.find("li", class_="next").a["href"]
+        else:
+            url = 0
+        return url
 
-# html request of the extracted urls
-for i in range (0,len(url_books)):
-    soup = extract_html(url_books[i])
-    tds, category = find_data()
-    save_to_csv(tds, i)
-
-def extract_next_page_url(url=url):
-#extraire l'url de la page suivante s'il y en a une
-    url_shortened = url.rstrip("index.html")
-    if soup.find("li", class_="next") is not None:
-        url = url_shortened + soup.find("li", class_="next").a["href"]
-    else:
-        pass
-    return url
-
-url = extract_next_page_url()
+    url = extract_next_page_url(url)
