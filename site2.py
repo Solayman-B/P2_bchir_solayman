@@ -43,11 +43,11 @@ def url_from_each_page(url):
     url_pages += url_page
     return url_pages
 
+book_url = []
 def extract_book_url(soup):
-    url_books = []
-    for url_book in soup.findAll("h3"):
-        url_books.append("http://books.toscrape.com/catalogue" + str(url_book.a["href"])[8:])
-    return url_books
+    for book in soup.findAll("h3"):
+        book_url.append("http://books.toscrape.com/catalogue" + str(book.a["href"])[8:])
+    return book_url
 
 
 
