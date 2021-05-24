@@ -29,17 +29,20 @@ import site2
 import book
 
 # extract html content from the main page
-site2.extract_html_content_from_url()
+soup = site2.extract_html_content_from_url()
 
 # extract category list urls
-category = site2.category_list()
+category_url = site2.category_list()
 
 # for each category
-for i in range(0, len(category)):
-    soup = site2.extract_html_content_from_url(category[i])
+for i in range(0, len(category_url)):
+    soup = site2.extract_html_content_from_url(category_url[i])
     # how many pages on this category
-    number_of_page = site2.number_of_page(soup)
-    
+    pages = site2.number_of_page(soup)
+    # extract url of each
+    url_pages = site2.extract_next_page_url(category_url[i], pages)
+    url_pages.append(category_url[i])
+    print(url_pages)
 
 
 
@@ -120,15 +123,7 @@ def save_to_csv(data, i, category):
 
 
 
-#def extract_next_page_url(url=url):
-    number_of_page = number_of_page()
-    if number_of_page > 1 :
-        url_shortened = url.rstrip("index.html")
-        url_pages = []
-        url_pages.append(url_shortened + soup.find("li", class_="next").a["href"])
-    else:
-        url_pages = []
-    return url_pages
+
 
 def extract_category_data():
     url_books = book.extract_urls()

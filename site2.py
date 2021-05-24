@@ -9,19 +9,27 @@ def extract_html_content_from_url(url="http://books.toscrape.com/index.html"):
         # save html in soup and analyse it with lxml
         soup = BeautifulSoup(response.text, "lxml")
     return soup
+
 soup = extract_html_content_from_url()
+
 def category_list():
-    category =[]
+    category_url =[]
     a = soup.find("ul").find_next("ul").findAll("a")
     for i in range(1, 51):
-        category.append("http://books.toscrape.com/" + a[i]["href"])
-    return category
+        category_url.append("http://books.toscrape.com/" + a[i]["href"])
+    return category_url
 
 def number_of_page(soup):
-    soup = soup
     if soup.find("li", class_="current"):
-        number_of_page = (soup.find("li", class_="current").text[40:])
+        pages = (soup.find("li", class_="current").text[40:])
     else:
-        number_of_page = 1
+        pages = 1
+    return int(pages)
 
-    return number_of_page
+def extract_next_page_url(url, pages):
+    url_pages = []
+    if pages > 1 :
+        url_shortened = url.rstrip("index.html")
+        for b in range(2, int(pages)+1):
+            url_pages.append(url_shortened + "page-" + str(b) + ".html")
+    return url_pages
