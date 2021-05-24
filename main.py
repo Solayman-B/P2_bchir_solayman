@@ -29,27 +29,30 @@ import site2
 import book
 
 # extract html content from the main page
-soup = site2.extract_html_content_from_url()
+site2.extract_html_content_from_url()
 
 # extract category list urls
-category_url = site2.category_list()
+category_url = site2.category_list_url()
+url_pages = site2.url_from_each_page(category_url)
 
-# for each category
-for i in range(0, len(category_url)):
-    soup = site2.extract_html_content_from_url(category_url[i])
-    # how many pages on this category
-    pages = site2.number_of_page(soup)
-    # extract url of each
-    url_pages = site2.extract_next_page_url(category_url[i], pages)
-    url_pages.append(category_url[i])
-    print(url_pages)
+# extract html content for each page
+for i in range(0, len(url_pages)):
+    soup = site2.extract_html_content_from_url(url_pages[i])
+    # extract book url from the html
+    book_url = site2.extract_book_url(soup)
+    print(book_url)
 
-
-
-
+#for i in url_pages:
+    #soup = site2.extract_html_content_from_url(url_pages.pop())
+    #book_url.append(book.extract_urls(soup))
 
 
-url_books = book.extract_urls()
+
+
+
+
+
+
 
 def book_rating():
     rating = soup.find("p", class_="star-rating")

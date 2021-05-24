@@ -12,7 +12,7 @@ def extract_html_content_from_url(url="http://books.toscrape.com/index.html"):
 
 soup = extract_html_content_from_url()
 
-def category_list():
+def category_list_url():
     category_url =[]
     a = soup.find("ul").find_next("ul").findAll("a")
     for i in range(1, 51):
@@ -26,10 +26,28 @@ def number_of_page(soup):
         pages = 1
     return int(pages)
 
-def extract_next_page_url(url, pages):
+def url_from_each_page(url):
     url_pages = []
-    if pages > 1 :
-        url_shortened = url.rstrip("index.html")
-        for b in range(2, int(pages)+1):
-            url_pages.append(url_shortened + "page-" + str(b) + ".html")
+    url_page = []
+    # for each category
+    for i in range(0, len(url)):
+        soup = extract_html_content_from_url(url[i])
+        # how many pages on this category
+        pages = number_of_page(soup)
+        # extract url of each page
+        url_page.append(url[i])
+        if pages > 1:
+            url_shortened = url[i].rstrip("index.html")
+            for b in range(2, int(pages) + 1):
+                url_pages.append(url_shortened + "page-" + str(b) + ".html")
+    url_pages += url_page
     return url_pages
+
+def extract_book_url(soup):
+    url_books = []
+    for url_book in soup.findAll("h3"):
+        url_books.append("http://books.toscrape.com/catalogue" + str(url_book.a["href"])[8:])
+    return url_books
+
+
+
