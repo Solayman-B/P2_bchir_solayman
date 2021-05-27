@@ -47,6 +47,18 @@ You can also install Git via this link and use :
 
 To use this script properly you need to use [python3](https://www.python.org/downloads/)
 
+Then you can create a virtual environment:
+
+    python3 -m venv env # env is the name of the directory but you can choose another one if you want
+
+On Windows, run:
+
+    env\Scripts\activate.bat
+
+On Unix or MacOS, run:
+
+    source env/bin/activate
+
 You can install all the require paquets with:
 
     pip install -r requirements.txt
