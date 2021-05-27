@@ -36,7 +36,7 @@ Installation
 First you can download this project by :
 
 clicking on « code » then « download ZIP »
-or [click here to download it directly](https://github.com/Solayman-B/P2_bchir_solayman.git)
+or [click here to download it directly](https://github.com/Solayman-B/P2_bchir_solayman/archive/refs/heads/main.zip)
 
 Unzip the file when the download is completed
 
