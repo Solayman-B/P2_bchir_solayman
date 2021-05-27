@@ -1,30 +1,7 @@
-"""
------------------------
-virtualenv
-
-source env/bin/activate
-
-deactivate
-
-----------------------
-
-commandes git
-
-git add fichier.extension
-
-git status
-
-git commit -m "modification apportée"
-
-git push origin main
-
-"""
-#importer les paquets nécessaires
 # coding: utf-8
-import requests
-from bs4 import BeautifulSoup
 import site2
 import book
+import os
 
 # extract html content from the main page
 site2.extract_html_content_from_url()
@@ -40,43 +17,18 @@ for i in range(0, len(url_pages)):
     book_url = site2.extract_book_url(soup)
 
 # extract informations for each book
+path = os.getcwd()
+if os.path.isdir(path + "/jpg_files"):
+    pass
+else:
+    os.makedirs(path + "/jpg_files")
+
+if os.path.isdir(path + "/csv_files"):
+    pass
+else:
+    os.makedirs(path + "/csv_files")
 for i in range(0, len(book_url)):
     soup = site2.extract_html_content_from_url(book_url[i])
     info = book.find_data(soup, book_url, i)
     book.save_to_csv(info[0], info[1])
-
-
-
-
-
-def extract_category_data():
-    url_books = book.extract_urls()
-
-    # html request of the extracted urls
-    for i in range (0,len(url_books)):
-        # get html request
-        response = requests.get(url_books[i])
-        # if request is valid (code 200)
-        if response.ok:
-            # save html in soup and analyse it with lxml
-            soup = BeautifulSoup(response.text, "lxml")
-            tds, category = find_data(soup, i)
-            save_to_csv(tds, i, category)
-
-
-#number_of_page = number_of_page()
-
-#if int(number_of_page) < 2:
- #   extract_category_data()
-
-#else:
- #   for i in range(int(number_of_page)):
-  #      print(i)
-   #     url = extract_next_page_url().pop()
-        # get html request
-    #    response = requests.get(url)
-        # if request is valid (code 200)
-     #   if response.ok:
-            # save html in soup and analyse it with lxml
-      #      soup = BeautifulSoup(response.text, "lxml")
-       #     extract_category_data()
+    book.save_image_to_jpg(info[2], info[3].replace(":","").replace("/","") + ".jpg")

@@ -1,6 +1,7 @@
 from site2 import soup
 import os
 import csv
+import urllib.request
 
 def book_rating(soup):
     rating = soup.find("p", class_="star-rating")
@@ -28,7 +29,8 @@ def find_data(soup, book_url, i):
     tds.append(tda[0].text)
 
     # title
-    tds.append(soup.find("h1").text)
+    title = soup.find("h1").text
+    tds.append(title)
 
     price_including_tax = tda[2].text
     tds.append(price_including_tax[1:])
@@ -56,18 +58,24 @@ def find_data(soup, book_url, i):
 
     # image
     image = soup.find("img")["src"]
-    tds.append("http://books.toscrape.com" + image[5:])
-    return tds, category
+    image = "http://books.toscrape.com" + image[5:]
+    tds.append(image)
+    return tds, category, image, title
 
-
+path = os.getcwd()
 def save_to_csv(data, category):
     file_name = category + ".csv"
-    if os.path.isfile(file_name):
-        file = open(file_name, "a", newline="")
+    if os.path.isfile(path + "/csv_files/" + file_name):
+        file = open(path + "/csv_files/" + file_name, "a", newline="")
         writer = csv.writer(file)
     else:
-        file = open(file_name, "w", newline="")
+        file = open(path + "/csv_files/" + file_name, "w", newline="")
         writer = csv.writer(file)
         writer.writerow(["product_page_url; universal_ product_code (upc); title; price_including_tax; price_excluding_tax; number_available; product_description; category;review_rating; image_url"])
     writer.writerow(data)
     file.close()
+
+def save_image_to_jpg(image, title):
+    LocalDestinationPath = path + "/jpg_files"
+    os.chdir(LocalDestinationPath)
+    urllib.request.urlretrieve(image, title)
