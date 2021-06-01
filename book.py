@@ -1,7 +1,7 @@
-from site2 import soup
 import os
 import csv
 import urllib.request
+
 
 def book_rating(soup):
     rating = soup.find("p", class_="star-rating")
@@ -17,14 +17,17 @@ def book_rating(soup):
         rating = "5/5"
     return rating
 
+
 # analyse data and save to tds
 def find_data(soup, book_url, i):
     tds = []
 
-    # rechercher tous les td (balises de cellules de tableau html)
+    # search all the td (cells tag from html tab)
     tda = soup.findAll("td")
+
     # url page
     tds.append(book_url[i])
+
     # upc
     tds.append(tda[0].text)
 
@@ -41,28 +44,33 @@ def find_data(soup, book_url, i):
     number_available = tda[5].text
     tds.append(number_available[10:12])
 
-    # description obtenue à partir de la balise id précédente
-    if soup.find("div", id="product_description") == None:
+    # description from id tag
+    if soup.find("div", id="product_description") is None:
         description = ""
     else:
-        description = soup.find("div", id="product_description").find_next("p").text
-    # remplacer ; par ";"
+        description = soup.find("div", id="product_description")\
+            .find_next("p").text
+    # replace ";" by ","
     tds.append(description.replace(";", ","))
 
-    # catégorie du livre
+    # book category
     category = soup.find("li", class_="active").find_previous("a").text
     tds.append(category)
 
-    # extraction de la note
+    # rating extraction
     tds.append(book_rating(soup))
 
     # image
     image = soup.find("img")["src"]
     image = "http://books.toscrape.com" + image[5:]
     tds.append(image)
+
     return tds, category, image, title
 
+
 path = os.getcwd()
+
+
 def save_to_csv(data, category):
     file_name = category + ".csv"
     if os.path.isfile(path + "/csv_files/" + file_name):
@@ -71,11 +79,19 @@ def save_to_csv(data, category):
     else:
         file = open(path + "/csv_files/" + file_name, "w", newline="")
         writer = csv.writer(file)
-        writer.writerow(["product_page_url; universal_ product_code (upc); title; price_including_tax; price_excluding_tax; number_available; product_description; category;review_rating; image_url"])
+        writer.writerow(
+            [
+                "product_page_url; universal_ product_code (upc); title;\
+                 price_including_tax; price_excluding_tax;\
+                 number_available; product_description;\
+                 category;review_rating; image_url"
+            ]
+        )
     writer.writerow(data)
     file.close()
 
+
 def save_image_to_jpg(image, title):
-    LocalDestinationPath = path + "/jpg_files"
-    os.chdir(LocalDestinationPath)
+    destination_path = path + "/jpg_files"
+    os.chdir(destination_path)
     urllib.request.urlretrieve(image, title)

@@ -31,4 +31,5 @@ for i in range(0, len(book_url)):
     soup = site2.extract_html_content_from_url(book_url[i])
     info = book.find_data(soup, book_url, i)
     book.save_to_csv(info[0], info[1])
-    book.save_image_to_jpg(info[2], info[3].replace(":","").replace("/","") + ".jpg")
+    book.save_image_to_jpg(info[2], info[3].replace(":", "")
+                           .replace("/", "") + ".jpg")

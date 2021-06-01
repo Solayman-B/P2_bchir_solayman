@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 
+
 def extract_html_content_from_url(url="http://books.toscrape.com/index.html"):
     # get html request
     response = requests.get(url)
@@ -10,21 +11,25 @@ def extract_html_content_from_url(url="http://books.toscrape.com/index.html"):
         soup = BeautifulSoup(response.text, "lxml")
     return soup
 
+
 soup = extract_html_content_from_url()
 
+
 def category_list_url():
-    category_url =[]
+    category_url = []
     a = soup.find("ul").find_next("ul").findAll("a")
     for i in range(1, 51):
         category_url.append("http://books.toscrape.com/" + a[i]["href"])
     return category_url
 
+
 def number_of_page(soup):
     if soup.find("li", class_="current"):
-        pages = (soup.find("li", class_="current").text[40:])
+        pages = soup.find("li", class_="current").text[40:]
     else:
         pages = 1
     return int(pages)
+
 
 def url_from_each_page(url):
     url_pages = []
@@ -43,11 +48,12 @@ def url_from_each_page(url):
     url_pages += url_page
     return url_pages
 
+
 book_url = []
+
+
 def extract_book_url(soup):
     for book in soup.findAll("h3"):
-        book_url.append("http://books.toscrape.com/catalogue" + str(book.a["href"])[8:])
+        book_url.append("http://books.toscrape.com/catalogue"
+                        + str(book.a["href"])[8:])
     return book_url
-
-
-

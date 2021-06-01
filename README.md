@@ -35,11 +35,8 @@ Installation
 
 First, you can download this project by :
 
-<<<<<<< HEAD
 clicking on « code » then « download ZIP »
-=======
-clicking on « code » then « download ZIP »
->>>>>>> c965df8b8d3c335f18e87773bb417a99a3731d30
+
 or [click here to download it directly](https://github.com/Solayman-B/P2_bchir_solayman/archive/refs/heads/main.zip)
 
 Unzip the file when the download is completed
@@ -70,8 +67,4 @@ You can install all the required paquets with:
 Run
 ---
 
-<<<<<<< HEAD
 Go to the root of the file with python3, and use `python3 main.py` to run the code
-=======
-Go to the root of the file with python3, and use `python3 main.py` to run the code
->>>>>>> c965df8b8d3c335f18e87773bb417a99a3731d30
