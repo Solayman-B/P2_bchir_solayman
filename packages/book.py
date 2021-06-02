@@ -2,6 +2,9 @@ import os
 import csv
 import urllib.request
 
+path = os.getcwd()
+path_jpg = path + "/jpg_files"
+path_csv = path + "/csv_files"
 
 def book_rating(soup):
     rating = soup.find("p", class_="star-rating")
@@ -51,7 +54,7 @@ def find_data(soup, book_url, i):
         description = soup.find("div", id="product_description")\
             .find_next("p").text
     # replace ";" by ","
-    tds.append(description.replace(";", ","))
+    tds.append(description)
 
     # book category
     category = soup.find("li", class_="active").find_previous("a").text
@@ -68,30 +71,23 @@ def find_data(soup, book_url, i):
     return tds, category, image, title
 
 
-path = os.getcwd()
-
-
 def save_to_csv(data, category):
-    file_name = category + ".csv"
-    if os.path.isfile(path + "/csv_files/" + file_name):
-        file = open(path + "/csv_files/" + file_name, "a", newline="")
+    file_name = path + "/csv_files/" + category + ".csv"
+    if os.path.isfile(file_name):
+        #with open(file_name, "a") as mon_fichier
+        file = open(file_name, "a", newline="")
         writer = csv.writer(file)
     else:
-        file = open(path + "/csv_files/" + file_name, "w", newline="")
+        file = open(file_name, "w", newline="")
         writer = csv.writer(file)
-        writer.writerow(
-            [
-                "product_page_url; universal_ product_code (upc); title;\
-                 price_including_tax; price_excluding_tax;\
-                 number_available; product_description;\
-                 category;review_rating; image_url"
-            ]
-        )
+        writer.writerow(("product_page_url", "universal_product_code (upc)", "title",\
+                 "price_including_tax", "price_excluding_tax",\
+                 "number_available", "product_description",\
+                 "category", "review_rating", "image_url"))
     writer.writerow(data)
     file.close()
 
 
 def save_image_to_jpg(image, title):
-    destination_path = path + "/jpg_files"
-    os.chdir(destination_path)
+    os.chdir(path_jpg)
     urllib.request.urlretrieve(image, title)

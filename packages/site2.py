@@ -54,6 +54,6 @@ book_url = []
 
 def extract_book_url(soup):
     for book in soup.findAll("h3"):
-        book_url.append("http://books.toscrape.com/catalogue"
+        book_url.append("http://books.toscrape.com/catalogue"\
                         + str(book.a["href"])[8:])
     return book_url

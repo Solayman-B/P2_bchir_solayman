@@ -1,7 +1,6 @@
 # coding: utf-8
-import site2
-import book
 import os
+from packages import site2, book
 
 # extract html content from the main page
 site2.extract_html_content_from_url()
@@ -17,16 +16,15 @@ for i in range(0, len(url_pages)):
     book_url = site2.extract_book_url(soup)
 
 # extract informations for each book
-path = os.getcwd()
-if os.path.isdir(path + "/jpg_files"):
+if os.path.isdir(book.path_jpg):
     pass
 else:
-    os.makedirs(path + "/jpg_files")
+    os.makedirs(book.path_jpg)
 
-if os.path.isdir(path + "/csv_files"):
+if os.path.isdir(book.path_csv):
     pass
 else:
-    os.makedirs(path + "/csv_files")
+    os.makedirs(book.path_csv)
 for i in range(0, len(book_url)):
     soup = site2.extract_html_content_from_url(book_url[i])
     info = book.find_data(soup, book_url, i)
