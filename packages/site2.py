@@ -12,10 +12,7 @@ def extract_html_content_from_url(url="http://books.toscrape.com/index.html"):
     return soup
 
 
-soup = extract_html_content_from_url()
-
-
-def category_list_url():
+def category_list_url(soup):
     category_url = []
     a = soup.find("ul").find_next("ul").findAll("a")
     for i in range(1, 51):
@@ -49,10 +46,7 @@ def url_from_each_page(url):
     return url_pages
 
 
-book_url = []
-
-
-def extract_book_url(soup):
+def extract_book_url(soup, book_url):
     for book in soup.findAll("h3"):
         book_url.append("http://books.toscrape.com/catalogue"\
                         + str(book.a["href"])[8:])
